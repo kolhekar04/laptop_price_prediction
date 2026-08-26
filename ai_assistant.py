@@ -3,12 +3,13 @@ import streamlit as st
 from huggingface_hub import InferenceClient
 
 def query_llama(latest_laptop, message_history):
-    # Try fetching from Render's environment variables first, then local Streamlit secrets
+    # Retrieve token safely from Render env vars or local secrets
     hf_token = os.getenv("HF_TOKEN") or st.secrets.get("HF_TOKEN")
     
     if not hf_token:
-        raise ValueError("HF_TOKEN is missing! Please configure it in your Render environment variables or .streamlit/secrets.toml")
+        raise ValueError("HF_TOKEN is missing! Please configure it in your Render environment variables.")
 
+    # Initialize the client
     client = InferenceClient(
         model="meta-llama/Llama-3.1-8B-Instruct",
         token=hf_token
@@ -21,7 +22,8 @@ def query_llama(latest_laptop, message_history):
     
     messages = [system_prompt] + message_history
     
-    response = client.chat_completion(
+    # Use the universally compatible chat completions endpoint format
+    response = client.chat.completions.create(
         messages=messages, 
         max_tokens=250
     )
